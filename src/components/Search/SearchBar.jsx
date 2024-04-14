@@ -7,7 +7,7 @@ export function SearchBar ({submit}) {
 
     const handleSubmit = (values, {resetForm}) => {
         if (query.trim() === "") {
-            toast.error('Please enter search term!');
+          return  toast.error('Please enter search term!');
         }
         submit(query);
         resetForm()

@@ -52,9 +52,13 @@ const App = () => {
     const handleLoadMore = async () => {
         try {
             const data= await APIphoto(query, page + 1);
-            setArticles((prevArticles) => [...prevArticles, ...data])
-            setPage((prevPage)=> prevPage + 1 )
-            setLoadMore(data.length > 0)
+            if (data.length > 0){
+                const newData = data.filter((item) => !articles.some((article) => article.id === item.id));
+                setArticles((prevArticles) => [...prevArticles, ...newData]);
+                setPage((prevPage)=> prevPage + 1 )
+            } else {
+                setLoadMore(false)
+            }
         } catch (e) {
             console.error(e);
         }
