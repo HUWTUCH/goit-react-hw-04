@@ -1,0 +1,10 @@
+.listImage {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    list-style: none;
+    max-width: 100%;
+}
+.item {
+    width: calc((100% - 60px) / 5);
+}
