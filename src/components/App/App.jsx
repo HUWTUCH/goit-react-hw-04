@@ -31,6 +31,7 @@ const App = () => {
                 const data=await APIphoto(query, page + 1);
                 setArticles((prevArticles) => [...prevArticles, ...data]);
                 setLoadMore(data.length > 0);
+
             } catch (e) {
                 console.error('API error', e)
                 toast.error('Please enter search term!');
@@ -44,7 +45,7 @@ const App = () => {
 
     const onHandleSubmit = (value) => {
         setQuery(value);
-        setPage(1);
+        setPage(0);
         setArticles([]);
         setLoading(true)
     }
