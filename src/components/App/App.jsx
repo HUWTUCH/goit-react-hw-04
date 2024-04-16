@@ -1,19 +1,19 @@
-import {useEffect, useState} from 'react'
-import './App.css'
-import {SearchBar} from "../Search/SearchBar.jsx";
+import { useEffect, useState } from 'react';
+import './App.css';
+import { SearchBar } from "../Search/SearchBar.jsx";
 import ImageGallery from "../ImageGallery/ImageGallery.jsx";
-import {APIphoto} from "../../API/photo-api.js";
+import { APIphoto } from "../../API/photo-api.js";
 import LoadMoreBtn from "../LoadMoreBtn/LoadMore.jsx";
 import Loader from "../Loader/Loader.jsx";
 import ErrorMessage from "../Error/Error.jsx";
 import ImageModal from "../ImageModal/ImageModal.jsx";
 import Modal from "react-modal";
-import toast, {Toaster} from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 
 const App = () => {
     const [articles, setArticles] = useState([]);
     const [query, setQuery] = useState("");
-    const [page, setPage] = useState(0);
+    const [page, setPage] = useState(1);
     const [loadMore, setLoadMore] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
@@ -22,84 +22,73 @@ const App = () => {
     const [alt, setAlt] = useState('');
     const [description, setDescription] = useState('');
 
-
     useEffect(() => {
         Modal.setAppElement('#root');
-        const API = async () => {
+    }, []);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (query.trim() === "") return; // Перевіряємо, чи не пустий рядок
+            setError(false); // Скидаємо стан помилки
+            setLoading(true); // Встановлюємо стан завантаження
             try {
-                setLoading(true)
-                const data=await APIphoto(query, page + 1);
+                const data = await APIphoto(query, page);
                 setArticles((prevArticles) => [...prevArticles, ...data]);
                 setLoadMore(data.length > 0);
             } catch (e) {
-                console.error('API error', e)
-                toast.error('Please enter search term!');
-                setError(true)
-            }finally {
-                setLoading(false)
+                console.error('API error', e);
+                toast.error('Error fetching data. Please try again.');
+                setError(true); // Встановлюємо стан помилки
+            } finally {
+                setLoading(false); // Зупиняємо завантаження незалежно від результату
             }
-        }
-        API();
-    }, [page, query]);
+        };
 
-    const onHandleSubmit = (value) => {
-        setQuery(value);
-        setPage(0);
-        setArticles([]);
-        setLoading(true)
-    }
+        fetchData();
+    }, [page, query]); // Запускаємо ефект при зміні сторінки або запиту
 
-    const handleLoadMore = async () => {
-        try {
-            const data= await APIphoto(query, page + 1);
-            if (data.length > 0){
-                const newData = data.filter((item) => !articles.some((article) => article.id === item.id));
-                setArticles((prevArticles) => [...prevArticles, ...newData]);
-                setPage((prevPage)=> prevPage + 1 )
-            } else {
-                setLoadMore(false)
-            }
-        } catch (e) {
-            console.error(e);
-        }
-    }
+    const handleSubmit = (value) => {
+        setPage(1); // Скидаємо сторінку при новому запиті
+        setArticles([]); // Очищуємо список статей
+        setQuery(value); // Встановлюємо новий запит
+    };
 
-    const isOpenModal= (obj) => {
+    const handleLoadMore = () => {
+        setPage((prevPage) => prevPage + 1);
+    };
+
+    const openModal = (obj) => {
         setShowModal(true);
         setAlt(obj.alt_description);
         setUrl(obj.urls.regular);
         setDescription(obj.description);
-    }
-    const isCloseModal= () => {
+    };
+
+    const closeModal = () => {
         setShowModal(false);
         setAlt('');
         setUrl('');
         setDescription('');
-    }
+    };
 
     return (
         <div>
             <Toaster position="top-right" reverseOrder={false} />
-            <SearchBar submit={onHandleSubmit}/>
-            {error && (<ErrorMessage />)}
-            {articles.length > 0 && (
-                <>
-                    <ImageGallery data={articles} openModal={isOpenModal}/>
-                    { loadMore && (
-                        <LoadMoreBtn onClick={handleLoadMore} loadBtn={loadMore}/>
-                    )}
-                    {loading && (<Loader/>)}
-                </>
-            )}
+            <SearchBar submit={handleSubmit} />
+            {error && <ErrorMessage />} {/* Відображаємо ErrorMessage, якщо error === true */}
+            <ImageGallery data={articles} openModal={openModal} />
+            {loadMore && <LoadMoreBtn onClick={handleLoadMore} loadBtn={loadMore} />}
+            {loading && <Loader />}
             <ImageModal
                 isOpen={showModal}
                 url={url}
                 alt={alt}
-                closeModal={isCloseModal}
+                closeModal={closeModal}
                 description={description}
             />
         </div>
     );
 };
 
-export default App
+export default App;
+
